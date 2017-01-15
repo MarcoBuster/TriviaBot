@@ -1,4 +1,5 @@
 import sqlite3
+from languages import it
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
@@ -56,6 +57,11 @@ class User:
             c.execute('UPDATE OR IGNORE users SET state=? WHERE id=?', (new_state, self.id))
             conn.commit()
 
+    def getstr(self, str_code):
+        lang = self.language()
+        if lang == 'IT':
+            return it.get(str_code)
+
 
 class Callback:
     conn = sqlite3.connect('users.db')
@@ -66,3 +72,10 @@ class Callback:
         self.id = self.update.id
         self.query = self.update.data
         self.sender = self.update.sender
+        self.message = self.update.message
+        self.chat = self.message.chat
+
+        if self.chat is None:
+            self.isInline = True
+        else:
+            self.isInline = False

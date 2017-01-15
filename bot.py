@@ -35,10 +35,13 @@ def start(chat, message):
     user = User(message.sender)
     if not user.exists:
         text = '<b>Welcome, {n}!</b>\nFirst, <b>select a language</b>'.format(n=user.name)
-        bot.api.call('sendMessage', {
-            "chat_id": chat.id, "text": text, "parse_mode": "HTML", "reply_markup":
-                j({'inline_keyboard': [[{"text": "🇮🇹 Italian", "callback_data": "l@italian"}]]})
-        })
+        bot.api.call('sendMessage',
+                     dict(chat_id=chat.id,
+                          text=text,
+                          parse_mode="HTML",
+                          reply_markup=j(
+                              dict(inline_keyboard=[
+                                  [{"text": "🇮🇹 Italian", "callback_data": "l@IT"}]]))))
     else:
         message.reply('Benvenuto! La tua lingua è ' + user.language())
 
@@ -46,6 +49,7 @@ def start(chat, message):
 # noinspection PyShadowingNames,PyUnusedLocal,PyUnusedLocal
 def process_callback(bot, chains, update):
     settings.process(update)
+
 
 bot.register_update_processor("callback_query", process_callback)
 
