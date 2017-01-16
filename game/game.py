@@ -1,47 +1,26 @@
-from bot import bot
-from json import dumps as j
+import sqlite3
+import random
+import string
 
-
-class Question:
-    def __init__(self, question_id):
-        self.question_id = question_id
-
-    def get_question(self, user):
-        return user.getstr("q" + str(self.question_id))
-
-    def get_answers(self, user):
-        return (
-            user.getstr("q" + str(self.question_id) + "a1"),
-            user.getstr("q" + str(self.question_id) + "a2"),
-            user.getstr("q" + str(self.question_id) + "a3"),
-            user.getstr("q" + str(self.question_id) + "a4")
-        )
+conn = sqlite3.connect('users.db')
+c = conn.cursor()
+c.execute('CREATE TABLE IF NOT EXISTS questions(id INTEGER PRIMARY KEY NOT NULL, '
+          'question TEXT, answers TEXT, correct TEXT)')
 
 
 class Game:
-    def __init__(self, chat, user):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+
+    def __init__(self, chat, user, message):
         self.chat = chat
+        self.message = message
         self.user = user
 
-    def send(self, question=None):
-        if question is None:
-            self.message_id = bot.api.call('sendMessage', dict(
-                chat_id=self.chat.id,
-                text="",
-                parse_mode="HTML",
-                reply_markup=j(
-                    dict(inline_keyboard=[
-                        [{"text": "WIP", "callback_data": "WIP"}]])))).message_id
-        else:
-            answers = question.get_answers(self.user)
+        self.id = ''.join(random.choice(string.digits) for _ in range(8))
 
-            bot.api.call('editMessageText', dict(
-                chat_id=self.chat.id,
-                message_id=self.message_id,
-                text="",
-                parse_mode="HTML",
-                reply_markup=j(
-                    dict(inline_keyboard=[
-                        [{"text": answers[0], "callback_data": "a@0"}, {"text": answers[1], "callback_data": "a@1"}],
-                        [{"text": answers[2], "callback_data": "a@2"}, {"text": answers[3], "callback_data": "a@3"}]
-                    ]))))
+        c.execute('SELECT * FROM questions WHERE id=?', (self.id,))
+        row = c.fetchone()
+        self.question = row[0]
+        self.answers = list(row[1])
+        self.correct = row[2]

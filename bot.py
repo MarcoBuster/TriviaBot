@@ -50,7 +50,6 @@ def start(chat, message):
 def process_callback(bot, chains, update):
     settings.process(update)
 
-
 bot.register_update_processor("callback_query", process_callback)
 
 if __name__ == "__main__":
